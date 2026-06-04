@@ -230,3 +230,64 @@ You can override parameters such as tenant/app identifiers, CSV path, and output
 
 - The script currently supports CSV-based migration from a legacy source into Entra.
 - Ensure Entra app permissions for Microsoft Graph are granted before running provisioning.
+
+## Enable SMS OTP MFA in Entra External ID (POC)
+
+Use these steps to enable mobile OTP (SMS) as MFA for users created by the bulk provisioning script.
+
+### Prerequisites
+
+- You are signed in to the correct External tenant (customer tenant), not a different workforce tenant.
+- The external tenant is linked to an active Azure subscription (required for SMS usage).
+- Your target users sign in with a first factor such as Email + Password.
+
+### Important Behavior
+
+- MFA enforcement is policy-driven (Authentication methods + Conditional Access), not user-creation-driven.
+- Setting `mobilePhone` in Graph helps with profile data, but does not by itself enforce MFA.
+- SMS for External ID is billed separately from base MAU usage.
+
+### Portal Steps (Simple Flow)
+
+1. Switch to the external tenant
+	- Entra admin center -> Settings (top bar) -> Directories + subscriptions -> select your External tenant.
+
+2. Confirm billing/subscription link for SMS
+	- Home -> Billing.
+	- If not linked, use upgrade/add subscription flow and link an active subscription.
+
+3. Enable SMS method
+	- Entra ID -> Authentication methods -> SMS.
+	- Set Enable to On.
+	- Target: All users (or a POC group).
+	- Save.
+
+4. Create Conditional Access policy to require MFA
+	- Entra ID -> Conditional Access -> Policies -> New policy.
+	- Users: include target external users.
+	- Target resources: select your frontend app registration.
+	- Grant: Require multifactor authentication.
+	- Enable policy: On.
+	- Save.
+
+5. If you get this error
+	- Error: "Security defaults must be disabled to enable Conditional Access policy."
+	- Fix in same tenant: Entra ID -> Overview -> Properties -> Manage security defaults -> Disable -> Save.
+	- Then immediately enable your Conditional Access MFA policy.
+
+6. Validate
+	- Sign in with a newly created user.
+	- Verify Email + Password first factor.
+	- Verify SMS OTP challenge appears as second factor.
+
+### Scope and Impact Clarification
+
+- Security Defaults and Conditional Access are tenant-scoped settings.
+- Changes affect only the tenant currently selected in Entra admin center.
+- They do not globally change other tenants.
+
+### Rollback
+
+- To re-enable Security Defaults later:
+  - Entra ID -> Overview -> Properties -> Manage security defaults -> Enable -> Save.
+  - If Conditional Access policies are On, disable those policies first.
