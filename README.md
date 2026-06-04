@@ -1,8 +1,10 @@
-# Agents Portal POC
+# Agents Portal User Migration to Entra External ID
 
 ## Overview
 
 This project is an Angular-based Agents Portal integrated with Microsoft Entra External ID (CIAM) for authentication and account lifecycle onboarding.
+
+This is useful for the legacy system which stores users in a local database and want to migrate user accounts to Entra External ID (CIAM). A migration script is provided at `scripts/create_entraid_users.ps1` to automate the transfer.
 
 The solution includes:
 
@@ -18,6 +20,12 @@ The solution includes:
 - MSAL for Angular (`@azure/msal-angular`, `@azure/msal-browser`)
 - Microsoft Graph REST API
 - PowerShell for bulk user migration
+- Entra External ID (CIAM): customer identity and authentication provider for external users.
+- Azure AD tenant: the directory where app registrations and resources are managed.
+- App registrations:
+	- Frontend (SPA) app registration for Angular/MSAL authentication.
+	- Backend (API) app registration for exposing scopes and defining app roles (`AgentAdmin`, `AgentUser`).
+	- Entra Conditional Access and MFA configuration to enforce secure sign-in.
 
 ## Feature Validation (Code Scan)
 
